@@ -76,6 +76,17 @@ class ShoppingCartItem extends StatelessWidget {
         ),
         child: Padding(
           padding: EdgeInsets.all(8),
+          // child: Row(children: [CircleAvatar(
+          //   child: Padding(
+          //     padding: EdgeInsets.all(5),
+          //     child: FittedBox(
+          //       child: Text(
+          //         '\$$price',
+          //       ),
+          //     ),
+          //   ),
+          // ),Text(title),
+          // Text('Total: \$${price * quantity}'),],),
           child: ListTile(
             leading: CircleAvatar(
               child: Padding(
@@ -85,13 +96,7 @@ class ShoppingCartItem extends StatelessWidget {
                     '\$$price',
                   ),
                 ),
-                // child: Text(
-                //   '\$${price}',
-                // ),
               ),
-              // child: Text(
-              //   '\$${price}',
-              // ),
             ),
             title: Text(title),
             subtitle: Text('Total: \$${price * quantity}'),

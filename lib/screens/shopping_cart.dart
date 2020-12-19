@@ -31,7 +31,7 @@ class ShoppingCart extends StatelessWidget {
                   label: Text(
                     '\$${cart.cartTotal.toStringAsFixed(2)}',
                     style: TextStyle(
-                      color: Theme.of(context).primaryTextTheme.title.color,
+                      color: Theme.of(context).primaryTextTheme.headline6.color,
                     ),
                   ),
                   backgroundColor: Theme.of(context).primaryColor,
