@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'dart:math' as math;
-// import 'package:provider/provider.dart';
+import 'package:provider/provider.dart';
 //
 import '../providers/product.dart';
-// import '../providers/products.dart';
+import '../providers/products.dart';
 
 class ProductEdit extends StatefulWidget {
   static const routeName = 'product-edit';
@@ -45,7 +45,7 @@ class _ProductEditState extends State<ProductEdit> {
     // if ( _isInvalid ) {
     //   print("darn");
     //   return;
-    }
+    // }
     //
     _form.currentState.save();
     print(_editedProduct.description);
