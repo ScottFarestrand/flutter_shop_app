@@ -1,14 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../providers/products.dart';
+
 import '../screens/product_edits.dart';
 import 'package:flutter/services.dart';
 import 'dart:math' as math;
 
 class UserProductItem extends StatelessWidget {
+  final String id;
   final String title;
   final String imageURl;
   final double price;
 
-  UserProductItem({this.title, this.imageURl, this.price});
+  UserProductItem({this.id, this.title, this.imageURl, this.price});
 
   @override
   Widget build(BuildContext context) {
@@ -27,14 +32,19 @@ class UserProductItem extends StatelessWidget {
                 color: Theme.of(context).primaryColor,
                 onPressed: () {
                   print(ProductEdit.routeName);
-                  Navigator.of(context).pushNamed(ProductEdit.routeName);
+                  Navigator.of(context)
+                      .pushNamed(ProductEdit.routeName, arguments: id);
                 },
               ),
               IconButton(
                 icon: Icon(Icons.delete),
                 color: Theme.of(context).errorColor,
                 onPressed: () {
-                  Navigator.of(context).pushNamed(ProductEdit.routeName);
+                  print('deleting');
+                  print(id);
+                  Provider.of<Products>(context, listen: false)
+                      .deleteProduct(id);
+                  // Navigator.of(context).pushNamed(ProductEdit.routeName);
                 },
               )
             ],
@@ -51,9 +61,9 @@ class DecimalTextInputFormatter extends TextInputFormatter {
 
   @override
   TextEditingValue formatEditUpdate(
-      TextEditingValue oldValue, // unused.
-      TextEditingValue newValue,
-      ) {
+    TextEditingValue oldValue, // unused.
+    TextEditingValue newValue,
+  ) {
     TextSelection newSelection = newValue.selection;
     String truncated = newValue.text;
 

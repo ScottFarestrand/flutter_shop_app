@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 import '../providers/product.dart';
 
@@ -50,6 +52,7 @@ class Products with ChangeNotifier {
   List<Product> get favorites {
     return _items.where((prod) => prod.isFavorite).toList();
   }
+
   // void showFavoritesOnly() {
   //   _showFavoritesOnly = true;
   //   notifyListeners();
@@ -60,12 +63,53 @@ class Products with ChangeNotifier {
   //   notifyListeners();
   // }
 
-  void addProduct(Product product) {
-    final newProduct = Product(id: DateTime.now().toString(),
-      title: product.title, description: product.description, price: product.price, imageUrl: product.imageUrl,);
-    _items.add(newProduct);
-    print('ADded');
+  Future<void> addProduct(Product product) async {
+    const url =
+        'https://shopapp-ab5a0-default-rtdb.firebaseio.com/products.json';
+    try {
+      final response = await http.post(url,
+          body: json.encode({
+            'title': product.title,
+            'description': product.description,
+            'price': product.price,
+            'imageUrl': product.imageUrl,
+            'isFavorite': product.isFavorite,
+          }));
+      print(json.decode(response.body));
+      // final newProduct = Product(
+      //   id: json.decode(response.body),
+      //   title: product.title,
+      //   description: product.description,
+      //   price: product.price,
+      //   imageUrl: product.imageUrl,
+      // );
+      // _items.add(newProduct);
+      notifyListeners();
+    } catch (error) {
+      print(error);
+      throw error;
+    }
+  }
+
+  void updateProduct(Product product) {
+    print(product.id);
+    print(product.price);
+    final index = _items.indexWhere((prod) => prod.id == product.id);
+    if (index >= 0) {
+      _items[index] = product;
+      notifyListeners();
+    }
+  }
+
+  void deleteProduct(String id) {
+    print('Delete it');
+    _items.removeWhere((prod) => prod.id == id);
     notifyListeners();
+    // final index = _items.indexWhere((prod) => prod.id == id);
+    // if ( index >= 0 ) {
+    //   _items.removeAt(index);
+    //   notifyListeners();
+    // }
   }
 
   Product findById(String id) {
