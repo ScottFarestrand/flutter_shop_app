@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/shopping_cart.dart';
+import '../providers/products.dart';
 
 import '../widgets/app_drawer.dart';
 import '../widgets/products_grid.dart';
@@ -20,8 +21,31 @@ class ProductOverview extends StatefulWidget {
 }
 
 class _ProductOverviewState extends State<ProductOverview> {
-  bool showOnlyFavorites = false;
+  bool _showOnlyFavorites = false;
+  bool _isInit = true;
+  bool _isLoading = true;
+
   @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+
+    if (_isInit) {
+      _isLoading = true;
+      Provider.of<Products>(context).getProducts().then((_) => {
+        setState(() {
+          _isLoading = false;
+        } )
+
+      });
+      _isInit = false;
+    }
+    super.didChangeDependencies();
+  }
+
   Widget build(BuildContext context) {
     // final productsContainer = Provider.of<Products>(context, listen: false);
     return Scaffold(
@@ -32,10 +56,10 @@ class _ProductOverviewState extends State<ProductOverview> {
             onSelected: (selectedValue) {
               setState(() {
                 if (selectedValue == FilterOptions.Favorites) {
-                  showOnlyFavorites = true;
+                  _showOnlyFavorites = true;
                   // productsContainer.showFavoritesOnly();
                 } else {
-                  showOnlyFavorites = false;
+                  _showOnlyFavorites = false;
                   // productsContainer.showAll();
                 }
               });
@@ -67,7 +91,7 @@ class _ProductOverviewState extends State<ProductOverview> {
         ],
       ),
       drawer: AppDrawer(),
-      body: ProductsGrid(showOnlyFavorites),
+      body: _isLoading ? Center(child: CircularProgressIndicator(),) : ProductsGrid(_showOnlyFavorites),
     );
   }
 }
