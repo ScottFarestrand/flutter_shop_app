@@ -65,6 +65,7 @@ class Products with ChangeNotifier {
   // }
 
   Future<void> getProducts() async {
+    _items.clear();
     const url =
         'https://shopapp-ab5a0-default-rtdb.firebaseio.com/products.json';
     try {
@@ -104,14 +105,19 @@ class Products with ChangeNotifier {
             'isFavorite': product.isFavorite,
           }));
       print(json.decode(response.body));
-      // final newProduct = Product(
-      //   id: json.decode(response.body),
-      //   title: product.title,
-      //   description: product.description,
-      //   price: product.price,
-      //   imageUrl: product.imageUrl,
-      // );
-      // _items.add(newProduct);
+      var responseMapped = jsonDecode(response.body) as Map;
+
+      var tempID = responseMapped['name'];
+      print(tempID);
+      final newProduct = Product(
+        id: tempID,
+        title: product.title,
+        description: product.description,
+        price: product.price,
+        imageUrl: product.imageUrl,
+      );
+      print("adding to list");
+      _items.add(newProduct);
       notifyListeners();
     } catch (error) {
       print(error);
@@ -119,20 +125,62 @@ class Products with ChangeNotifier {
     }
   }
 
-  void updateProduct(Product product) {
+  Future<void> updateProduct(Product product) async {
+    print("updating");
+    final id = product.id;
+    final url =
+        'https://shopapp-ab5a0-default-rtdb.firebaseio.com/products/$id.json';
     print(product.id);
-    print(product.price);
-    final index = _items.indexWhere((prod) => prod.id == product.id);
-    if (index >= 0) {
-      _items[index] = product;
+    print(url);
+
+    try {
+      final response = await http.patch(url,
+          body: json.encode({
+            'title': product.title,
+            'description': product.description,
+            'price': product.price,
+            'imageUrl': product.imageUrl,
+            'isFavorite': product.isFavorite,
+          }));
+      print(response.body);
+      final index = _items.indexWhere((prod) => prod.id == product.id);
+      if (index >= 0) {
+        _items[index] = product;
+      }
+    } catch (error) {
+      throw error;
+    } finally {
       notifyListeners();
     }
+
+    // print(product.id);
+    // print(product.price);
+    // final index = _items.indexWhere((prod) => prod.id == product.id);
+    // if (index >= 0) {
+    //   _items[index] = product;
+    //   notifyListeners();
+    // }
   }
 
-  void deleteProduct(String id) {
-    print('Delete it');
-    _items.removeWhere((prod) => prod.id == id);
-    notifyListeners();
+  Future<void> deleteProduct(String id) async {
+    final url =
+        'https://shopapp-ab5a0-default-rtdb.firebaseio.com/products/$id.json';
+    try {
+      final response = await http.delete(url);
+      print(response.body);
+      final index = _items.indexWhere((prod) => prod.id == id);
+      _items.removeAt(index);
+    } catch (error) {
+      print("error");
+      throw (error);
+    } finally {
+      print("notifying");
+      notifyListeners();
+    }
+
+    // print('Delete it');
+    // _items.removeWhere((prod) => prod.id == id);
+    // notifyListeners();
     // final index = _items.indexWhere((prod) => prod.id == id);
     // if ( index >= 0 ) {
     //   _items.removeAt(index);

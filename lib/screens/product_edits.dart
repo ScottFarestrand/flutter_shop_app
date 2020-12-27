@@ -100,7 +100,7 @@ class _ProductEditState extends State<ProductEdit> {
       try {
         print("Trying");
         await Provider.of<Products>(context, listen: false)
-            .addProduct(_editedProduct);
+            .updateProduct(_editedProduct);
       } catch (error) {
         print(error);
         await showDialog(
