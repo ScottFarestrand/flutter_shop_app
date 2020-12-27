@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import '../model/http_exception.dart';
 import 'dart:convert';
 
 import '../providers/product.dart';
@@ -163,29 +164,35 @@ class Products with ChangeNotifier {
   }
 
   Future<void> deleteProduct(String id) async {
-    final url =
-        'https://shopapp-ab5a0-default-rtdb.firebaseio.com/products/$id.json';
-    try {
-      final response = await http.delete(url);
-      print(response.body);
-      final index = _items.indexWhere((prod) => prod.id == id);
-      _items.removeAt(index);
-    } catch (error) {
-      print("error");
-      throw (error);
-    } finally {
-      print("notifying");
-      notifyListeners();
-    }
+    final index = _items.indexWhere((prod) => prod.id == id);
+    final existingItem = _items[index];
 
-    // print('Delete it');
-    // _items.removeWhere((prod) => prod.id == id);
-    // notifyListeners();
-    // final index = _items.indexWhere((prod) => prod.id == id);
-    // if ( index >= 0 ) {
-    //   _items.removeAt(index);
-    //   notifyListeners();
-    // }
+    final url =
+        'https://shopapp-ab5a0-default-rtdb.firebaseio.com/prodxxucts/$id.json';
+
+    _items.removeAt(index);
+    notifyListeners();
+
+    final response = await http.delete(url);
+    if (response.statusCode >= 400) {
+      _items.insert(index, existingItem);
+      notifyListeners();
+      throw HttpException("Delete if product $id failed");
+
+
+    }
+    // http.delete(url).then((response) {
+    //   print(response.statusCode);
+    //   if (response.statusCode >= 400){
+    //     print('Error found');
+    //     _items.insert(index, existingItem);
+    //     notifyListeners();
+    //     throw HttpException('unable to delete product id $id');
+    //   }
+    // });
+
+
+
   }
 
   Product findById(String id) {
