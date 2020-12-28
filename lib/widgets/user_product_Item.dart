@@ -1,106 +1,62 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../screens/edit_product_screen.dart';
 import '../providers/products.dart';
-
-import '../screens/product_edits.dart';
-import 'package:flutter/services.dart';
-import 'dart:math' as math;
 
 class UserProductItem extends StatelessWidget {
   final String id;
   final String title;
-  final String imageURl;
-  final double price;
+  final String imageUrl;
 
-  UserProductItem({this.id, this.title, this.imageURl, this.price});
+  UserProductItem(this.id, this.title, this.imageUrl);
 
   @override
   Widget build(BuildContext context) {
-    final scaffoldMessenger = ScaffoldMessenger.of(context);
     // final scaffold = Scaffold.of(context);
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
     return ListTile(
-        title: Text(title),
-        leading: CircleAvatar(
-          backgroundImage: NetworkImage(imageURl),
-        ),
-        trailing: Container(
-          width: 150,
-          child: Row(
-            children: <Widget>[
-              Text('\$$price'),
-              IconButton(
-                icon: Icon(Icons.edit),
-                color: Theme.of(context).primaryColor,
-                onPressed: () {
-                  print(ProductEdit.routeName);
-                  Navigator.of(context)
-                      .pushNamed(ProductEdit.routeName, arguments: id);
-                },
-              ),
-              IconButton(
-                icon: Icon(Icons.delete),
-                color: Theme.of(context).errorColor,
-                onPressed: () async {
-                  print('deleting');
-                  print(id);
-                  try {
-                    await Provider.of<Products>(context, listen: false)
-                        .deleteProduct(id);
-                  } catch (error) {
-                    print("caught");
-                    scaffoldMessenger.showSnackBar(
-                      SnackBar(
-                        content: Text('Deleting failed!', textAlign: TextAlign.center,),
+      title: Text(title),
+        // https://tinyurl.com/y8v5cv8p
+      leading: CircleAvatar(
+        backgroundImage: NetworkImage(imageUrl),
+      ),
+      trailing: Container(
+        width: 100,
+        child: Row(
+          children: <Widget>[
+            IconButton(
+              icon: Icon(Icons.edit),
+              onPressed: () {
+                Navigator.of(context)
+                    .pushNamed(EditProductScreen.routeName, arguments: id);
+              },
+              color: Theme.of(context).primaryColor,
+            ),
+            IconButton(
+              icon: Icon(Icons.delete),
+              onPressed: () async {
+                print("deleting");
+                try {
+                  print('trying');
+                  await Provider.of<Products>(context, listen: false)
+                      .deleteProduct(id);
+                } catch (error) {
+                  scaffoldMessenger.showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        'Deleting failed!',
+                        textAlign: TextAlign.center,
                       ),
-                    );
-                  }
-
-                  // Navigator.of(context).pushNamed(ProductEdit.routeName);
-                },
-              )
-            ],
-          ),
-        ));
-  }
-}
-
-class DecimalTextInputFormatter extends TextInputFormatter {
-  DecimalTextInputFormatter({this.decimalRange})
-      : assert(decimalRange == null || decimalRange > 0);
-
-  final int decimalRange;
-
-  @override
-  TextEditingValue formatEditUpdate(
-    TextEditingValue oldValue, // unused.
-    TextEditingValue newValue,
-  ) {
-    TextSelection newSelection = newValue.selection;
-    String truncated = newValue.text;
-
-    if (decimalRange != null) {
-      String value = newValue.text;
-
-      if (value.contains(".") &&
-          value.substring(value.indexOf(".") + 1).length > decimalRange) {
-        truncated = oldValue.text;
-        newSelection = oldValue.selection;
-      } else if (value == ".") {
-        truncated = "0.";
-
-        newSelection = newValue.selection.copyWith(
-          baseOffset: math.min(truncated.length, truncated.length + 1),
-          extentOffset: math.min(truncated.length, truncated.length + 1),
-        );
-      }
-
-      return TextEditingValue(
-        text: truncated,
-        selection: newSelection,
-        composing: TextRange.empty,
-      );
-    }
-    return newValue;
+                    ),
+                  );
+                }
+              },
+              color: Theme.of(context).errorColor,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

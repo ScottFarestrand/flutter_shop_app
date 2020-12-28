@@ -1,10 +1,11 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 
 class CartItem {
   final String id;
   final String title;
   final int quantity;
   final double price;
+
   CartItem({
     @required this.id,
     @required this.title,
@@ -15,6 +16,7 @@ class CartItem {
 
 class Cart with ChangeNotifier {
   Map<String, CartItem> _items = {};
+
   Map<String, CartItem> get items {
     return {..._items};
   }
@@ -23,57 +25,34 @@ class Cart with ChangeNotifier {
     return _items.length;
   }
 
-  double get cartTotal {
-    double total = 0.0;
+  double get totalAmount {
+    var total = 0.0;
     _items.forEach((key, cartItem) {
       total += cartItem.price * cartItem.quantity;
     });
     return total;
   }
 
-  void removeItem(String id) {
-    _items.remove(id);
-    notifyListeners();
-  }
-
-  void removeSingleItem(String productId) {
-    if (!_items.containsKey(productId)) {
-      return;
-    }
-    if (_items[productId].quantity > 1) {
-      _items.update(
-        productId,
-        (existingCartItem) => CartItem(
-          id: existingCartItem.id,
-          title: existingCartItem.title,
-          price: existingCartItem.price,
-          quantity: (existingCartItem.quantity - 1),
-        ),
-      );
-      return;
-    }
-    _items.remove(productId);
-  }
-
   void addItem(
-    String productId,
-    String title,
-    double price,
-  ) {
+      String productId,
+      double price,
+      String title,
+      ) {
     if (_items.containsKey(productId)) {
+      // change quantity...
       _items.update(
         productId,
-        (existingCartItem) => CartItem(
+            (existingCartItem) => CartItem(
           id: existingCartItem.id,
           title: existingCartItem.title,
           price: existingCartItem.price,
-          quantity: (existingCartItem.quantity + 1),
+          quantity: existingCartItem.quantity + 1,
         ),
       );
     } else {
       _items.putIfAbsent(
         productId,
-        () => CartItem(
+            () => CartItem(
           id: DateTime.now().toString(),
           title: title,
           price: price,
@@ -84,7 +63,31 @@ class Cart with ChangeNotifier {
     notifyListeners();
   }
 
-  void emptyCart() {
+  void removeItem(String productId) {
+    _items.remove(productId);
+    notifyListeners();
+  }
+
+  void removeSingleItem(String productId) {
+    if (!_items.containsKey(productId)) {
+      return;
+    }
+    if (_items[productId].quantity > 1) {
+      _items.update(
+          productId,
+              (existingCartItem) => CartItem(
+            id: existingCartItem.id,
+            title: existingCartItem.title,
+            price: existingCartItem.price,
+            quantity: existingCartItem.quantity - 1,
+          ));
+    } else {
+      _items.remove(productId);
+    }
+    notifyListeners();
+  }
+
+  void clear() {
     _items = {};
     notifyListeners();
   }

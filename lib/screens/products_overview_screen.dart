@@ -1,72 +1,75 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../providers/shopping_cart.dart';
-import '../providers/products.dart';
-
 import '../widgets/app_drawer.dart';
 import '../widgets/products_grid.dart';
 import '../widgets/badge.dart';
-
-import '../screens/shopping_cart.dart';
+import '../providers/cart.dart';
+import './cart_screen.dart';
+import '../providers/products.dart';
 
 enum FilterOptions {
   Favorites,
   All,
 }
 
-class ProductOverview extends StatefulWidget {
+class ProductsOverviewScreen extends StatefulWidget {
   @override
-  _ProductOverviewState createState() => _ProductOverviewState();
+  _ProductsOverviewScreenState createState() => _ProductsOverviewScreenState();
 }
 
-class _ProductOverviewState extends State<ProductOverview> {
-  bool _showOnlyFavorites = false;
-  bool _isInit = true;
-  bool _isLoading = true;
+class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
+  var _showOnlyFavorites = false;
+  var _isInit = true;
+  var _isLoading = false;
 
   @override
   void initState() {
+    // Provider.of<Products>(context).fetchAndSetProducts(); // WON'T WORK!
+    // Future.delayed(Duration.zero).then((_) {
+    //   Provider.of<Products>(context).fetchAndSetProducts();
+    // });
     super.initState();
   }
 
   @override
   void didChangeDependencies() {
-
     if (_isInit) {
-      _isLoading = true;
-      Provider.of<Products>(context).getProducts().then((_) => {
+      setState(() {
+        _isLoading = true;
+      });
+      Provider.of<Products>(context).fetchAndSetProducts().then((_) {
         setState(() {
           _isLoading = false;
-        } )
-
+        });
       });
-      _isInit = false;
     }
+    _isInit = false;
     super.didChangeDependencies();
   }
 
+  @override
   Widget build(BuildContext context) {
-    // final productsContainer = Provider.of<Products>(context, listen: false);
     return Scaffold(
       appBar: AppBar(
-        title: Text('My Shop'),
+        title: Text('MyShop'),
         actions: <Widget>[
           PopupMenuButton(
-            onSelected: (selectedValue) {
+            onSelected: (FilterOptions selectedValue) {
               setState(() {
                 if (selectedValue == FilterOptions.Favorites) {
                   _showOnlyFavorites = true;
-                  // productsContainer.showFavoritesOnly();
                 } else {
                   _showOnlyFavorites = false;
-                  // productsContainer.showAll();
                 }
               });
             },
+            icon: Icon(
+              Icons.more_vert,
+            ),
             itemBuilder: (_) => [
               PopupMenuItem(
-                child: Text('Show Favorites'),
+                child: Text('Only Favorites'),
                 value: FilterOptions.Favorites,
               ),
               PopupMenuItem(
@@ -74,24 +77,29 @@ class _ProductOverviewState extends State<ProductOverview> {
                 value: FilterOptions.All,
               ),
             ],
-            icon: Icon(Icons.more_vert),
           ),
           Consumer<Cart>(
-            builder: (_, cartData, ch) => Badge(
+            builder: (_, cart, ch) => Badge(
               child: ch,
-              value: cartData.itemCount.toString(),
+              value: cart.itemCount.toString(),
             ),
             child: IconButton(
+              icon: Icon(
+                Icons.shopping_cart,
+              ),
               onPressed: () {
-                Navigator.of(context).pushNamed(ShoppingCart.routeName);
+                Navigator.of(context).pushNamed(CartScreen.routeName);
               },
-              icon: Icon(Icons.shopping_cart),
             ),
-          )
+          ),
         ],
       ),
       drawer: AppDrawer(),
-      body: _isLoading ? Center(child: CircularProgressIndicator(),) : ProductsGrid(_showOnlyFavorites),
+      body: _isLoading
+          ? Center(
+        child: CircularProgressIndicator(),
+      )
+          : ProductsGrid(_showOnlyFavorites),
     );
   }
 }

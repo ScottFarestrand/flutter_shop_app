@@ -1,54 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/shopping_cart.dart';
 
-class ShoppingCartItem extends StatelessWidget {
+import '../providers/cart.dart';
+
+class CartItem extends StatelessWidget {
   final String id;
-  final String productID;
+  final String productId;
   final double price;
   final int quantity;
   final String title;
 
-  ShoppingCartItem({
-    this.id,
-    this.productID,
-    this.price,
-    this.quantity,
-    this.title,
-  });
+  CartItem(
+      this.id,
+      this.productId,
+      this.price,
+      this.quantity,
+      this.title,
+      );
 
   @override
   Widget build(BuildContext context) {
     return Dismissible(
-      confirmDismiss: (direction) {
-        if (direction == DismissDirection.endToStart) {
-          return showDialog(
-            context: (context),
-            builder: (ctx) => AlertDialog(
-              title: Text(
-                'Confirm Removal',
-              ),
-              content: Text('Do you want to remove the selected Item?'),
-              actions: <Widget>[
-                FlatButton(
-                  child: Text('Yes'),
-                  onPressed: () {
-                    Navigator.of(ctx).pop(true);
-                  },
-                ),
-                FlatButton(
-                  child: Text('No'),
-                  onPressed: () {
-                    Navigator.of(ctx).pop(false);
-                  },
-                ),
-              ],
-            ),
-          );
-        }
-        // showDialog(context: context, builder: context(ctx) => AlertDialog(title: Text('are you sure'), content: Text('Do you want to remove the selected Item',) ,));
-      },
-      // direction: DismissDirection.endToStart,
       key: ValueKey(id),
       background: Container(
         color: Theme.of(context).errorColor,
@@ -64,10 +36,34 @@ class ShoppingCartItem extends StatelessWidget {
           vertical: 4,
         ),
       ),
+      direction: DismissDirection.endToStart,
+      confirmDismiss: (direction) {
+        return showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: Text('Are you sure?'),
+            content: Text(
+              'Do you want to remove the item from the cart?',
+            ),
+            actions: <Widget>[
+              FlatButton(
+                child: Text('No'),
+                onPressed: () {
+                  Navigator.of(ctx).pop(false);
+                },
+              ),
+              FlatButton(
+                child: Text('Yes'),
+                onPressed: () {
+                  Navigator.of(ctx).pop(true);
+                },
+              ),
+            ],
+          ),
+        );
+      },
       onDismissed: (direction) {
-        if (direction == DismissDirection.endToStart) {
-          Provider.of<Cart>(context, listen: false).removeItem(productID);
-        }
+        Provider.of<Cart>(context, listen: false).removeItem(productId);
       },
       child: Card(
         margin: EdgeInsets.symmetric(
@@ -76,34 +72,22 @@ class ShoppingCartItem extends StatelessWidget {
         ),
         child: Padding(
           padding: EdgeInsets.all(8),
-          // child: Row(children: [CircleAvatar(
-          //   child: Padding(
-          //     padding: EdgeInsets.all(5),
-          //     child: FittedBox(
-          //       child: Text(
-          //         '\$$price',
-          //       ),
-          //     ),
-          //   ),
-          // ),Text(title),
-          // Text('Total: \$${price * quantity}'),],),
           child: ListTile(
             leading: CircleAvatar(
               child: Padding(
                 padding: EdgeInsets.all(5),
                 child: FittedBox(
-                  child: Text(
-                    '\$$price',
-                  ),
+                  child: Text('\$$price'),
                 ),
               ),
             ),
             title: Text(title),
-            subtitle: Text('Total: \$${price * quantity}'),
-            trailing: Text('Quantity $quantity x'),
+            subtitle: Text('Total: \$${(price * quantity)}'),
+            trailing: Text('$quantity x'),
           ),
         ),
       ),
     );
   }
 }
+
