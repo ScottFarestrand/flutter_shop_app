@@ -11,6 +11,7 @@ class CartScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cart = Provider.of<Cart>(context);
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
     return Scaffold(
       appBar: AppBar(
         title: Text('Your Cart'),
@@ -33,22 +34,13 @@ class CartScreen extends StatelessWidget {
                     label: Text(
                       '\$${cart.totalAmount.toStringAsFixed(2)}',
                       style: TextStyle(
-                        color: Theme.of(context).primaryTextTheme.headline6.color,
+                        color:
+                            Theme.of(context).primaryTextTheme.headline6.color,
                       ),
                     ),
                     backgroundColor: Theme.of(context).primaryColor,
                   ),
-                  FlatButton(
-                    child: Text('ORDER NOW'),
-                    onPressed: () {
-                      Provider.of<Orders>(context, listen: false).addOrder(
-                        cart.items.values.toList(),
-                        cart.totalAmount,
-                      );
-                      cart.clear();
-                    },
-                    textColor: Theme.of(context).primaryColor,
-                  )
+                  OrderFlatButton(cart: cart, scaffoldMessenger: scaffoldMessenger),
                 ],
               ),
             ),
@@ -68,6 +60,58 @@ class CartScreen extends StatelessWidget {
           )
         ],
       ),
+    );
+  }
+}
+
+class OrderFlatButton extends StatefulWidget {
+  const OrderFlatButton({
+    Key key,
+    @required this.cart,
+    @required this.scaffoldMessenger,
+  }) : super(key: key);
+
+  final Cart cart;
+  final ScaffoldMessengerState scaffoldMessenger;
+
+  @override
+  _OrderFlatButtonState createState() => _OrderFlatButtonState();
+}
+
+class _OrderFlatButtonState extends State<OrderFlatButton> {
+  bool _isLoading = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return FlatButton(
+      child: _isLoading ? CircularProgressIndicator() : Text('ORDER NOW'),
+      onPressed: ( widget.cart.totalAmount <= 0 || _isLoading )? null : () async {
+        setState(() {
+          _isLoading = true;
+        });
+        try {
+          await Provider.of<Orders>(context, listen: false)
+              .addOrder(
+            widget.cart.items.values.toList(),
+            widget.cart.totalAmount,
+          );
+          widget.cart.clear();
+          setState(() {
+            _isLoading = false;
+          });
+        } catch (error) {
+          print('Caught in screen');
+          widget.scaffoldMessenger.showSnackBar(
+            SnackBar(
+              content: Text(
+                'Error Occurred on Server',
+                textAlign: TextAlign.center,
+              ),
+            ),
+          );
+        }
+      },
+      textColor: Theme.of(context).primaryColor,
     );
   }
 }
