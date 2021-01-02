@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/auth.dart';
+import '../models/http_exception.dart';
 
 enum AuthMode { Signup, Login }
 
@@ -104,6 +105,23 @@ class _AuthCardState extends State<AuthCard> {
   var _isLoading = false;
   final _passwordController = TextEditingController();
 
+  void _showErrorDialog(String message) {
+    showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+              title: Text('An error Occured'),
+              content: Text(message),
+              actions: [
+                FlatButton(
+                  child: Text('Okay'),
+                  onPressed: () {
+                    Navigator.of(ctx).pop();
+                  },
+                )
+              ],
+            ));
+  }
+
   void _submit() async {
     if (!_formKey.currentState.validate()) {
       // Invalid!
@@ -113,17 +131,43 @@ class _AuthCardState extends State<AuthCard> {
     setState(() {
       _isLoading = true;
     });
-    if (_authMode == AuthMode.Login) {
-      await Provider.of<Auth>(context, listen: false).login(
-        _authData['email'],
-        _authData['password'],
-      );
-    } else {
-      await Provider.of<Auth>(context, listen: false).signup(
-        _authData['email'],
-        _authData['password'],
-      );
+    try {
+      if (_authMode == AuthMode.Login) {
+        await Provider.of<Auth>(context, listen: false).login(
+          _authData['email'],
+          _authData['password'],
+        );
+      } else {
+        await Provider.of<Auth>(context, listen: false).signup(
+          _authData['email'],
+          _authData['password'],
+        );
+      }
+    } on HttpException catch (error) {
+      print('caught error');
+      var errorMessage = 'Authentification Failed';
+      if (error.toString().contains('EMAIL_EXISTS')) {
+        errorMessage = 'This Email address is already in use';
+      } else if (error.toString().contains('OPERATION_NOT_ALLOWED')) {
+        errorMessage = 'Password not allowed for this Project';
+      } else if (error.toString().contains('TOO_MANY_ATTEMPTS_TRY_LATER')) {
+        errorMessage = 'Too Many attempts Try Later';
+      } else if (error.toString().contains('EMAIL_NOT_FOUND')) {
+        errorMessage = 'Email address is not registered';
+      } else if (error.toString().contains('INVALID_PASSWORD')) {
+        errorMessage = 'Invalid Password';
+      } else if (error.toString().contains('USER_DISABLED')) {
+        errorMessage = 'User Profile is Disabled';
+      } else if (error.toString().contains('WEAK_PASSWORD')) {
+        errorMessage = 'Entered Password is to Weak';
+      }
+      print(errorMessage);
+      _showErrorDialog(errorMessage);
+    } catch (error) {
+      var errorMessage = 'Network Error - Unableto contact Server';
+      _showErrorDialog(errorMessage);
     }
+
     setState(() {
       _isLoading = false;
     });
