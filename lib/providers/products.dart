@@ -43,6 +43,9 @@ class Products with ChangeNotifier {
   ];
 
   // var _showFavoritesOnly = false;
+  // final String authToken;
+  //
+  // Products(this.authToken, this._items);
 
   List<Product> get items {
     // if (_showFavoritesOnly) {
@@ -70,12 +73,12 @@ class Products with ChangeNotifier {
   // }
 
   Future<void> fetchAndSetProducts() async {
-    const url =
+    final url =
         'https://shopapp-ab5a0-default-rtdb.firebaseio.com/products.json';
     try {
       final response = await http.get(url);
       final extractedData = json.decode(response.body) as Map<String, dynamic>;
-      if ( extractedData == null) {
+      if (extractedData == null) {
         return;
       }
       final List<Product> loadedProducts = [];
@@ -97,7 +100,7 @@ class Products with ChangeNotifier {
   }
 
   Future<void> addProduct(Product product) async {
-    const url =
+    final url =
         'https://shopapp-ab5a0-default-rtdb.firebaseio.com/products.json';
     try {
       final response = await http.post(
@@ -129,7 +132,6 @@ class Products with ChangeNotifier {
   Future<void> updateProduct(String id, Product newProduct) async {
     final prodIndex = _items.indexWhere((prod) => prod.id == id);
     if (prodIndex >= 0) {
-
       final url = 'https://shopapp-ab5a0-default-rtdb.firebaseio.com/$id.json';
       await http.patch(url,
           body: json.encode({
@@ -146,15 +148,12 @@ class Products with ChangeNotifier {
   }
 
   Future<void> deleteProduct(String id) async {
-    print(id);
-    final url = 'https://shopapp-ab5a0-default-rtdb.firebaseio.com/products/$id.json';
+    final url = 'https://shopapp-ab5a0-default-rtdb.firebaseio.com/';
     final existingProductIndex = _items.indexWhere((prod) => prod.id == id);
     var existingProduct = _items[existingProductIndex];
     _items.removeAt(existingProductIndex);
-    print(url);
     notifyListeners();
     final response = await http.delete(url);
-    print(response.statusCode);
     if (response.statusCode >= 400) {
       _items.insert(existingProductIndex, existingProduct);
       notifyListeners();
