@@ -5,7 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
 
 import '../models/http_exception.dart';
-import '../providers/auth.dart';
+
 
 class Auth with ChangeNotifier {
   String _token;
@@ -20,6 +20,7 @@ class Auth with ChangeNotifier {
     if (_token != null &&
         _expiryDate.isAfter(DateTime.now()) &&
         _userId != null) {
+      print('returning Token $_token');
       return _token;
     }
     return null;
