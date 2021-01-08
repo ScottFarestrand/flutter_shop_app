@@ -6,7 +6,6 @@ import 'package:http/http.dart' as http;
 
 import '../models/http_exception.dart';
 
-
 class Auth with ChangeNotifier {
   String _token;
   DateTime _expiryDate;
@@ -24,6 +23,10 @@ class Auth with ChangeNotifier {
       return _token;
     }
     return null;
+  }
+
+  String get userID {
+    return _userId;
   }
 
   Future<void> _authenticate(
@@ -45,8 +48,9 @@ class Auth with ChangeNotifier {
         ),
       );
       final responseData = json.decode(response.body);
+      print(responseData);
       _token = responseData['idToken'];
-      _userId = responseData['email'];
+      _userId = responseData['localId'];
       _expiryDate = DateTime.now().add(Duration(hours: 24));
       print(responseData);
       print(_token);
