@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shop_app/screens/products_overview_screen.dart';
@@ -20,6 +21,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print('starting');
     return MultiProvider(
         providers: [
           ChangeNotifierProvider.value(
@@ -27,40 +29,57 @@ class MyApp extends StatelessWidget {
           ),
           ChangeNotifierProxyProvider<Auth, Products>(
             create: null,
-            update: (ctx, auth, previousProducts,) =>
-                Products(auth.token, auth.userID,
-                  previousProducts == null ? [] : previousProducts.items,),
+            update: (
+              ctx,
+              auth,
+              previousProducts,
+            ) =>
+                Products(
+              auth.token,
+              auth.userID,
+              previousProducts == null ? [] : previousProducts.items,
+            ),
           ),
           ChangeNotifierProvider.value(
             value: Cart(),
           ),
           ChangeNotifierProxyProvider<Auth, Orders>(
-            create: null,
-            update: (ctx, auth, previousOrders,) =>
-                Orders(auth.token,)
-          ),
+              create: null,
+              update: (
+                ctx,
+                auth,
+                previousOrders,
+              ) =>
+                  Orders(
+                    auth.token,
+                    auth.userID
+                  )),
         ],
         child: Consumer<Auth>(
-          builder: (ctx, auth, _) =>
-              MaterialApp(
-                  title: 'MyShop',
-                  theme: ThemeData(
-                    primarySwatch: Colors.purple,
-                    accentColor: Colors.deepOrange,
-                    fontFamily: 'Lato',
+          builder: (ctx, auth, _) => MaterialApp(
+              title: 'MyShop',
+              theme: ThemeData(
+                primarySwatch: Colors.purple,
+                accentColor: Colors.deepOrange,
+                fontFamily: 'Lato',
+              ),
+
+              home: auth.isAuth
+                  ? ProductsOverviewScreen() :
+                  FutureBuilder(
+                    future: auth.tryAutoLogin(),
+                    builder: (ctx, authResultSnapshot) =>
+                    authResultSnapshot.connectionState == ConnectionState.waiting ?
+                  CircularProgressIndicator() :
+                  AuthScreen(),
                   ),
-                  home: auth.token != null
-                      ? ProductsOverviewScreen()
-                      : AuthScreen(),
-                  // home:   ProductsOverviewScreen(),
-                  routes: {
-                    ProductDetailScreen.routeName: (ctx) =>
-                        ProductDetailScreen(),
-                    CartScreen.routeName: (ctx) => CartScreen(),
-                    OrdersScreen.routeName: (ctx) => OrdersScreen(),
-                    UserProductsScreen.routeName: (ctx) => UserProductsScreen(),
-                    EditProductScreen.routeName: (ctx) => EditProductScreen(),
-                  }),
+              routes: {
+                ProductDetailScreen.routeName: (ctx) => ProductDetailScreen(),
+                CartScreen.routeName: (ctx) => CartScreen(),
+                OrdersScreen.routeName: (ctx) => OrdersScreen(),
+                UserProductsScreen.routeName: (ctx) => UserProductsScreen(),
+                EditProductScreen.routeName: (ctx) => EditProductScreen(),
+              }),
         ));
   }
 }
